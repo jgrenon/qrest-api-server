@@ -1,0 +1,37 @@
+{
+  "name": "lifepulz-server",
+  "version": "0.0.4",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "./node_modules/mocha/bin/mocha server.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "author": "Joel Grenon",
+  "dependencies": {
+    "bluebird": "^3.4.0",
+    "body-parser": "^1.0.2",
+    "cors": "^2.7.1",
+    "express": "^4.1.1",
+    "express-promise-router": "^1.0.0",
+    "jsonwebtoken": "^6.2.0",
+    "lodash": "^4.12.0",
+    "meteor-random": "0.0.3",
+    "moment": "^2.13.0",
+    "mongodb": "^2.1.19",
+    "morgan": "1.5.0",
+    "oauth2orize": "^1.2.2",
+    "passport": "^0.3.2",
+    "passport-http-bearer": "^1.0.1",
+    "passport-local": "^1.0.0"
+  },
+  "devDependencies": {
+    "expect.js": "0.3.1",
+    "mocha": "2.0.1",
+    "superagent": "0.20.0"
+  }
+}

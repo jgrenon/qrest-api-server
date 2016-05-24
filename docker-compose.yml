@@ -1,0 +1,17 @@
+lb:
+  image: dockercloud/haproxy:latest
+  links:
+    - server
+  ports:
+    - '80:80'
+    - '443:443'
+server:
+  image: jgrenon/lifepulz-server
+  environment:
+    - BALANCE=source
+    - 'COOKIE=SRV insert indirect nocache'
+    - NODE_ENV=production
+    - VIRTUAL_HOST=http://api.lifepulz.com
+    - MONGODB_URL=mongodb://lpsys:lpsys2016@capital.6.mongolayer.com:10008,capital.7.mongolayer.com:10008/lp_dev?replicaSet=set-55d7941d4ab54e48bc000569
+  ports:
+    - '8888:8888'
