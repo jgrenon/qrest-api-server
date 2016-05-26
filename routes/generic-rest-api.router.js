@@ -15,8 +15,12 @@ module.exports = function(db, helpers) {
             req.preProcess = helpers.users.encryptPassword;
         }
 
-        if(collectionName === 'events') {
-            req.postProcess = helpers.events.broadcast;
+        if(helpers[collectionName].pre) {
+            req.preProcess = helpers[collectionName].pre;
+        }
+
+        if(helpers[collectionName].post) {
+            req.postProcess = helpers[collectionName].post;
         }
 
         return next()
@@ -47,6 +51,12 @@ module.exports = function(db, helpers) {
         _.each(_.keys(query), function(key){
             if(OPERATORS.indexOf(query[key][0]) !== -1) {
                 switch(query[key][0]) {
+                    // Full-text search
+                    case '*':
+                        break;
+                    // Spatial Search
+                    case '^':
+                        break;
                     case '>':
                         var val = query[key].substring(1);
                         if(val.indexOf('date:') === 0) {
@@ -79,9 +89,25 @@ module.exports = function(db, helpers) {
                         break;
                 }
             }
+
+            // Replace contextual value operators
+            if(query[key].indexOf('$$') === 0) {
+                if(query[key] === '$$username') {
+                    query[key] = req.user.username;
+                }
+                else if(query[key] === '$$uid') {
+                    query[key] = req.user._id;
+                }
+            }
         });
 
-        return req.collection.find(query, {limit: parseInt(req.query.limit || "10"), sort: sort}).toArray().then(function (results) {
+        var cursor = req.collection.find(query);
+
+        cursor.limit(parseInt(req.query.limit || "10"));
+        cursor.skip(parseInt(req.query.limit || "0"));
+        cursor.sort(sort);
+
+        return cursor.toArray().then(function (results) {
             return res.send(results);
         })
     });
@@ -90,12 +116,18 @@ module.exports = function(db, helpers) {
         req.body._user = req.user.username;
         req.body._ts = Date.now();
 
+        if(req.preProcess) {
+            req.body = req.preProcess(req.body);
+        }
+
         return req.collection.insertOne(req.body, {}).then(function (results) {
+            req.body._id = results.insertedId;
+
             if(req.postProcess) {
-                console.log("Executing post processor");
                 req.postProcess(req.body, results);
             }
-            return res.send(results);
+
+            return res.send(req.body);
         });
     });
 
@@ -142,7 +174,10 @@ module.exports = function(db, helpers) {
         })
     });
 
-    return router;
+    return {
+        path: '/v1',
+        router: router
+    };
 };
 
 
