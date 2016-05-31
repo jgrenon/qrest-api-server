@@ -1,0 +1,10 @@
+- _id: $$random.id()
+  username: test1
+  password: $$encryptPassword(test123)
+  email: test@test.unit
+  status: ACTIVE
+- _id: $$random.id()
+  username: inactive_user
+  password: $$encryptPassword(test123)
+  email: test2@test.unit
+  status: NEW

@@ -1,0 +1,6 @@
+- _id: $$random.id()
+  key: unit-test-app-1
+  secret: unit-test-app-1-secret
+  name: unit-test-app-1
+  owner: test1
+

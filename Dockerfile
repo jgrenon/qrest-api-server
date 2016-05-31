@@ -1,4 +1,5 @@
 FROM node:6.2.0
+MAINTAINER Joel Grenon <joelgrenon@covistra.com>
 
 ENV NODE_ENV production
 EXPOSE 8888

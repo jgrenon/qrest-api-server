@@ -6,12 +6,16 @@ lb:
     - '80:80'
     - '443:443'
 server:
-  image: jgrenon/lifepulz-server
+  image: jgrenon/qrest-api-server:latest
   environment:
     - BALANCE=source
     - 'COOKIE=SRV insert indirect nocache'
     - NODE_ENV=production
-    - VIRTUAL_HOST=http://api.lifepulz.com
-    - MONGODB_URL=mongodb://lpsys:lpsys2016@capital.6.mongolayer.com:10008,capital.7.mongolayer.com:10008/lp_dev?replicaSet=set-55d7941d4ab54e48bc000569
+    - VIRTUAL_HOST=http://api.covistra.com
+    - MONGODB_URL=mongodb://localhost:27017/qrest_api
+    - JWT_ISSUER=covistra.com
+    - JWT_AUDIENCE=covistra.com
+    - 'JWT_SHARED_KEY=e23e32e32e23e23e32e23e23e23e23e23e32e32e32e23'
+    - JWT_EXPIRES_IN=2592000
   ports:
     - '8888:8888'

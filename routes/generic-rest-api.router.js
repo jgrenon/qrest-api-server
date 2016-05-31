@@ -1,32 +1,36 @@
+/*
+ Copyright 2016 Covistra Technologies Inc.
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ */
 var expressRouter = require('express-promise-router'),
     _ = require('lodash'),
     moment = require('moment'),
-    mongodb = require('mongodb'),
     passport= require('passport');
 
-module.exports = function(db, helpers) {
-
+module.exports = function(db, config, Models, ModelFactory, log) {
     var router = expressRouter();
 
     router.param('collectionName', function (req, res, next, collectionName) {
-        req.collection = db.collection(collectionName);
-
-        if(collectionName === 'users') {
-            req.preProcess = helpers.users.encryptPassword;
+        req.model = Models[collectionName];
+        if(!req.model) {
+            req.model = ModelFactory(collectionName, config, log);
         }
-
-        if(helpers[collectionName].pre) {
-            req.preProcess = helpers[collectionName].pre;
-        }
-
-        if(helpers[collectionName].post) {
-            req.postProcess = helpers[collectionName].post;
-        }
-
         return next()
     });
 
-    router.get('/:collectionName', passport.authenticate('bearer', { session: false }), function (req, res) {
+    // List operation
+    router.get('/:collectionName', passport.authenticate('bearer', { session: false }), function (req, res, next) {
         req.query = req.query || {};
 
         var sort = _.pickBy(req.query, function (obj, key) {
@@ -53,10 +57,13 @@ module.exports = function(db, helpers) {
                 switch(query[key][0]) {
                     // Full-text search
                     case '*':
-                        break;
+                        return req.model.search(query[key].substring(1), req.query);
                     // Spatial Search
                     case '^':
-                        break;
+                        var coordString = query[key].substring(1);
+                        var lon = parseFloat(coordString.substring(0, coordString.indexOf(',')));
+                        var lat = parseFloat(coordString.substring(coordString.indexOf(',')+1));
+                        return req.model.search({latitude: lat, longitude: lon, radius: req.query.radius }, { type: 'spatial' });
                     case '>':
                         var val = query[key].substring(1);
                         if(val.indexOf('date:') === 0) {
@@ -101,84 +108,108 @@ module.exports = function(db, helpers) {
             }
         });
 
-        var cursor = req.collection.find(query);
+        var pre = _.get(req.model, "hooks.list.pre");
+        var post = _.get(req.model, "hooks.list.post");
 
-        cursor.limit(parseInt(req.query.limit || "10"));
-        cursor.skip(parseInt(req.query.limit || "0"));
-        cursor.sort(sort);
-
-        return cursor.toArray().then(function (results) {
-            return res.send(results);
-        })
-    });
-
-    router.post('/:collectionName', passport.authenticate('bearer', { session: false }), function (req, res) {
-        req.body._user = req.user.username;
-        req.body._ts = Date.now();
-
-        if(req.preProcess) {
-            req.body = req.preProcess(req.body);
+        if(pre) {
+            query = pre(query, req, next);
         }
 
-        return req.collection.insertOne(req.body, {}).then(function (results) {
-            req.body._id = results.insertedId;
-
-            if(req.postProcess) {
-                req.postProcess(req.body, results);
+        return req.model.find(query, { sort: sort, limit: parseInt(req.query.limit || "10"), offset: parseInt(req.query.limit || "0")}).then(function(results){
+            if(post) {
+                results = post(results, next);
             }
 
-            return res.send(req.body);
+            return res.send(results);
         });
     });
 
-    router.get('/:collectionName/:id', passport.authenticate('bearer', { session: false }), function (req, res) {
-        return req.collection.findOne({id: req.params.id}).then(function (result) {
+    // Create operation
+    router.post('/:collectionName', passport.authenticate('bearer', { session: false }), function (req, res, next) {
+        req.body._user = req.user.username;
+        req.body._ts = Date.now();
+
+        var pre = _.get(req.model, "hooks.create.pre");
+        var post = _.get(req.model, "hooks.create.post");
+
+        if(pre) {
+            req.body = pre(req.body, req, next);
+        }
+
+        return req.model.insert(req.body).then(function(result) {
+            if(post) {
+                result = post(result, req.body, next);
+            }
+            return res.send(result);
+        });
+
+    });
+
+    router.get('/:collectionName/:id', passport.authenticate('bearer', { session: false }), function (req, res, next) {
+        var pre = _.get(req.model, "hooks.show.pre");
+        var post = _.get(req.model, "hooks.show.post");
+
+        var q = {_id: req.params.id};
+        if(pre) {
+            q = pre(q, req, next);
+        }
+
+        return req.model.show(q).then(function (result) {
+            if(post) {
+                result = post(result, next);
+            }
+
             return res.send(result);
         })
     });
 
+    // Update operation
     router.put('/:collectionName/:id', passport.authenticate('bearer', { session: false }), function (req, res) {
         req.query = req.query || {};
 
-        if (req.query.schema && req.query.schema.length > 0) {
-            console.log("Found schema", req.query.schema);
-            _.forEach(req.query.schema[0], function (val, key) {
-                if (val.toLowerCase() === 'date') {
-                    console.log("Date value:", req.body[key]);
-                    req.body[key] = moment(req.body[key]).toDate();
-                }
-                else if (val.toLowerCase() === 'number') {
-                    req.body[key] = parseFloat(req.body[key]);
-                }
-                else if(val.toLowerCase() === 'bool') {
-                    req.body[key] = Boolean(req.body[key]);
-                }
-            });
-        }
+        var pre = _.get(req.model, "hooks.update.pre");
+        var post = _.get(req.model, "hooks.update.post");
 
         req.body._user = req.user.username;
         req.body._ts = Date.now();
 
-        return req.collection.updateOne({id: req.params.id}, {$set: req.body}, {
+        if(pre) {
+            req.body = pre(req.body, req, next);
+        }
+        
+        return req.model.update({id: req.params.id}, req.body,{
             safe: true,
             multi: false,
             upsert: Boolean(req.query.upsert) || false
         }).then(function (result) {
+            if(post) {
+                result = post(result, req.body, req, next);
+            }
+
             return res.send(result.result);
         })
     });
 
-    router.delete('/:collectionName/:id', passport.authenticate('bearer', { session: false }), function (req, res) {
-        return req.collection.removeOne({id: req.params.id}).then(function(result) {
+    router.delete('/:collectionName/:id', passport.authenticate('bearer', { session: false }), function (req, res, next) {
+        var pre = _.get(req.model, "hooks.remove.pre");
+        var post = _.get(req.model, "hooks.remove.post");
+
+        var q = {_id: req.params.id};
+        if(pre) {
+            q = pre(q, req, next);
+        }
+
+        return req.model.delete(req.params.id).then(function(result) {
+            if(post) {
+                result = post(result, next);
+            }
+
             return res.send(result.result);
         })
     });
 
     return {
-        path: '/v1',
+        path: config.api.root,
         router: router
     };
 };
-
-
-
