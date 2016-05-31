@@ -22,30 +22,6 @@
             <h1>{{doc.title}}</h1>
             <h3>Version: {{doc.version}}</h3>
             <uib-tabset>
-                <uib-tab heading="Configuration" index="0">
-                    {{#each doc.config}}
-                        <table class="table table-striped config">
-                            <tbody>
-                                {{#unless value}}
-                                <tr class="module">
-                                    <td>{{key}}</td>
-                                </tr>
-                                {{#each settings}}
-                                    <tr>
-                                        <td>{{key}}</td>
-                                        <td>{{value}}</td>
-                                    </tr>
-                                {{/each}}
-                                {{else}}
-                                <tr class="root_value">
-                                    <td>{{key}}</td>
-                                    <td>{{value}}</td>
-                                </tr>
-                                {{/unless}}
-                            </tbody>
-                        </table>
-                    {{/each}}
-                </uib-tab>
                 <uib-tab heading="Model" index="1">
                     <uib-accordion close-others="true">
                     {{#each doc.models}}
