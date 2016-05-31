@@ -1,17 +1,26 @@
-# Breakbulk
+# Quick REST API Server
 
-The Breakbulk project is an open-source framework using the strengths of both Docker and Node.JS to let you quickly build and deploy your
-own backend to support your mobile or rich web apps.
+This project aims at creating a simple yet powerful REST API server over MongoDB to support rich web applications. It provides the
+core features like security and all basic data operations (Create, List, Update, Remove, Show). It can easily be built as a docker
+image and run in your favorite cloud provider, alone or in docker-compose with your site.
 
 # Quick Start
+
+Just download and unzip the project on your local machine using (this link)[https://github.com/jgrenon/qrest-api-server/archive/master.zip]
 
 
 # Security
 
+## Register user accounts
 
-# Documentation
+You can register new user account with POST /register. The request body should be a JSON object containing the following fields:
 
+- username
+- password
+- email
 
+The builtin handler will encrypt the password, but no confirmation or validation emails will be sent. You should use your favorite mailer
+module in a **post hook** (see /models/users.model.js)
 
 # Add Routes
 

@@ -17,6 +17,7 @@
 const P = require('bluebird'),
     _ = require('lodash'),
     encryptPassword = require('../lib/encrypt-password'),
+    Random = require('meteor-random'),
     Schema = require('joi');
 
 module.exports = function(ModelFactory) {
@@ -29,7 +30,7 @@ module.exports = function(ModelFactory) {
     };
 
     const schema = Schema.object().keys({
-        _id: Schema.string().required(),
+        _id: Schema.string().alphanum().default(() => {return Random.id() }, 'auto-generated unique id'),
         username: Schema.string().meta({index: 1}).required(),
         email: Schema.string().lowercase().email().meta({index: 1}).required(),
         email_verified: Schema.boolean().default(false).meta({public: false }),
