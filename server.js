@@ -45,7 +45,7 @@ app.use(compression());
 var log = require('./lib/log')(config);
 var DB = require('./lib/db')(config, log);
 
-if(config.auth) {
+if(process.env.NO_AUTH || config.auth) {
     app.use(passport.initialize());
 }
 
