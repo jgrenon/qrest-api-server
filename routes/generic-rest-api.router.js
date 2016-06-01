@@ -126,7 +126,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
 
     // Create operation
     router.post('/:collectionName', passport.authenticate('bearer', { session: false }), function (req, res, next) {
-        req.body._user = req.user.username;
+        req.body._user = _.get(req, "user.username");
         req.body._ts = Date.now();
 
         var pre = _.get(req.model, "hooks.create.pre");
@@ -170,7 +170,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
         var pre = _.get(req.model, "hooks.update.pre");
         var post = _.get(req.model, "hooks.update.post");
 
-        req.body._user = req.user.username;
+        req.body._user = _.get(req, "user.username");
         req.body._ts = Date.now();
 
         if(pre) {

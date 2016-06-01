@@ -45,6 +45,10 @@ app.use(compression());
 var log = require('./lib/log')(config);
 var DB = require('./lib/db')(config, log);
 
+if(config.auth) {
+    app.use(passport.initialize());
+}
+
 DB.getDB(config.db.default_db).then(function(db) {
 
     var ModelFactory = require('./lib/model-factory')(config, DB);
