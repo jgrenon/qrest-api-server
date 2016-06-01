@@ -6,10 +6,10 @@ module.exports = {
                 options: {}
             },
             production: {
-                url: 'mongodb://mongodb:27017/qrest_api'
+                url: process.env.MONGODB_URL || 'mongodb://mongodb:27017/qrest_api'
             },
             $default: {
-                url: 'mongodb://localhost:27017/qrest_api'
+                url: process.env.MONGODB_URL || 'mongodb://localhost:27017/qrest_api'
             }
         },
         default_db: 'qrest_api'
