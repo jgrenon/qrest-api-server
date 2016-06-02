@@ -24,7 +24,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
     router.param('collectionName', function (req, res, next, collectionName) {
         req.model = Models[collectionName];
         if(!req.model) {
-            req.model = ModelFactory(collectionName, config, log);
+            req.model = ModelFactory(collectionName);
         }
         return next()
     });

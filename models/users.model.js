@@ -20,7 +20,7 @@ const P = require('bluebird'),
     Random = require('meteor-random'),
     Schema = require('joi');
 
-module.exports = function(ModelFactory) {
+module.exports = function(ModelFactory, config, log) {
 
     const Status = {
         ACTIVE: 'ACTIVE',
