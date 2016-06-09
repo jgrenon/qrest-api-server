@@ -30,7 +30,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
     });
 
     // List operation
-    router.get('/:collectionName', passport.authenticate('bearer', { session: false }), function (req, res, next) {
+    router.get('/:collectionName', passport.authenticate(config.auth.type, { session: false }), function (req, res, next) {
         req.query = req.query || {};
 
         var sort = _.pickBy(req.query, function (obj, key) {
@@ -54,6 +54,8 @@ module.exports = function(db, config, Models, ModelFactory, log) {
 
         _.each(_.keys(query), function(key){
             if(OPERATORS.indexOf(query[key][0]) !== -1) {
+                let val;
+
                 switch(query[key][0]) {
                     // Full-text search
                     case '*':
@@ -65,7 +67,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
                         var lat = parseFloat(coordString.substring(coordString.indexOf(',')+1));
                         return req.model.search({latitude: lat, longitude: lon, radius: req.query.radius }, { type: 'spatial' });
                     case '>':
-                        var val = query[key].substring(1);
+                        val = query[key].substring(1);
                         if(val.indexOf('date:') === 0) {
                             query[key] = {$gte: moment(val.substring(5)).toDate()};
                         }
@@ -77,7 +79,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
                         }
                         break;
                     case '<':
-                        var val = query[key].substring(1);
+                        val = query[key].substring(1);
                         if(val.indexOf('date:') === 0) {
                             query[key] = {$lte: moment(val.substring(5)).toDate()};
                         }
@@ -125,7 +127,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
     });
 
     // Create operation
-    router.post('/:collectionName', passport.authenticate('bearer', { session: false }), function (req, res, next) {
+    router.post('/:collectionName', passport.authenticate(config.auth.type, { session: false }), function (req, res, next) {
         req.body._user = _.get(req, "user.username");
         req.body._ts = Date.now();
 
@@ -145,7 +147,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
 
     });
 
-    router.get('/:collectionName/:id', passport.authenticate('bearer', { session: false }), function (req, res, next) {
+    router.get('/:collectionName/:id', passport.authenticate(config.auth.type, { session: false }), function (req, res, next) {
         var pre = _.get(req.model, "hooks.show.pre");
         var post = _.get(req.model, "hooks.show.post");
 
@@ -164,7 +166,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
     });
 
     // Update operation
-    router.put('/:collectionName/:id', passport.authenticate('bearer', { session: false }), function (req, res) {
+    router.put('/:collectionName/:id', passport.authenticate(config.auth.type, { session: false }), function (req, res) {
         req.query = req.query || {};
 
         var pre = _.get(req.model, "hooks.update.pre");
@@ -190,7 +192,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
         })
     });
 
-    router.delete('/:collectionName/:id', passport.authenticate('bearer', { session: false }), function (req, res, next) {
+    router.delete('/:collectionName/:id', passport.authenticate(config.auth.type, { session: false }), function (req, res, next) {
         var pre = _.get(req.model, "hooks.remove.pre");
         var post = _.get(req.model, "hooks.remove.post");
 

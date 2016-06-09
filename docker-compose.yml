@@ -12,7 +12,7 @@ server:
     - 'COOKIE=SRV insert indirect nocache'
     - NODE_ENV=production
     - VIRTUAL_HOST=http://api.covistra.com
-    - MONGODB_URL=mongodb://localhost:27017/qrest_api
+    - MONGODB_URL=mongodb://localhost:27017/covistra
     - JWT_ISSUER=covistra.com
     - JWT_AUDIENCE=covistra.com
     - 'JWT_SHARED_KEY=e23e32e32e23e23e32e23e23e23e23e23e32e32e32e23'

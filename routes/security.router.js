@@ -42,7 +42,7 @@ module.exports = function(db, config, Models) {
         }).catch(next);
     });
 
-    router.get('/me', passport.authenticate('bearer', { session: false }), function (req, res, next) {
+    router.get('/me', passport.authenticate(config.auth.type, { session: false }), function (req, res, next) {
         var pre = _.get(hooks.users, 'show.pre');
         var post = _.get(hooks.users, 'show.post');
 

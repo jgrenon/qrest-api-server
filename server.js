@@ -22,6 +22,7 @@ const express = require('express'),
     passport= require('passport'),
     LocalStrategy = require('passport-local').Strategy,
     BearerStrategy = require('passport-http-bearer').Strategy,
+    LocalAPIKeyStrategy = require('passport-localapikey').Strategy,
     JWT = require('jsonwebtoken'),
     requireDirectory = require('require-directory'),
     logger = require('morgan');
@@ -41,13 +42,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(logger('dev'));
 app.use(compression());
+app.use(passport.initialize());
 
 var log = require('./lib/log')(config);
 var DB = require('./lib/db')(config, log);
-
-if(!process.env.NO_AUTH || config.auth) {
-    app.use(passport.initialize());
-}
 
 DB.getDB(config.db.default_db).then(function(db) {
 
@@ -107,7 +105,23 @@ DB.getDB(config.db.default_db).then(function(db) {
 
         }
     ));
-    
+
+    passport.use(new LocalAPIKeyStrategy(
+        function(apiKey, done) {
+            db.collection('applications').findOne({key: apiKey}, function (err, app) {
+                if (err) {
+                    log.error(err);
+                    return done(err);
+                }
+                if (!app) {
+                    return done(null, false);
+                }
+
+                return done(null, app);
+            });
+        }
+    ));
+
     // Install all routes
     requireDirectory(module, __dirname + "/routes", { include: /\.router\.js$/, visit: function(factory) {
         var router = factory(db, config, Models, ModelFactory, log, app);
