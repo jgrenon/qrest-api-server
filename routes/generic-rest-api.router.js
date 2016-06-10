@@ -117,7 +117,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
             query = pre(query, req, next);
         }
 
-        return req.model.find(query, { sort: sort, limit: parseInt(req.query.limit || "10"), offset: parseInt(req.query.limit || "0")}).then(function(results){
+        return req.model.list(query, { sort: sort, limit: parseInt(req.query.limit || "10"), offset: parseInt(req.query.limit || "0")}).then(function(results){
             if(post) {
                 results = post(results, next);
             }
