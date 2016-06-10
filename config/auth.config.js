@@ -7,6 +7,6 @@ module.exports = {
 
     type: process.env.AUTH_TYPE || 'bearer',        // localapikey is also supported for simple internal backend (not exposed)
     auth: {
-        salt: "CHANGE_THIS_SALT_TO_SECURE_YOUR_PASSWORDS!"
+        salt: process.env.SALT || "CHANGE_THIS_SALT_TO_SECURE_YOUR_PASSWORDS!"
     }
 };

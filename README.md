@@ -22,6 +22,10 @@ You can register new user account with POST /register. The request body should b
 The builtin handler will encrypt the password, but no confirmation or validation emails will be sent. You should use your favorite mailer
 module in a **post hook** (see /models/users.model.js)
 
+## Create application
+
+You might want to open your REST Api to multiple applications.
+
 # Add Routes
 
 # Add Models
