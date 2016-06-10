@@ -5,8 +5,8 @@ module.exports = {
     JWT_AUDIENCE: "my-qrest-client-app",
     JWT_SHARED_KEY: "121212121212",
 
-    type: process.env.AUTH_TYPE || 'bearer',        // localapikey is also supported for simple internal backend (not exposed)
     auth: {
+        type: process.env.AUTH_TYPE || 'bearer',        // localapikey is also supported for simple internal backend (not exposed)
         salt: process.env.SALT || "CHANGE_THIS_SALT_TO_SECURE_YOUR_PASSWORDS!"
     }
 };

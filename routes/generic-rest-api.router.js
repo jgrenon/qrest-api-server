@@ -26,7 +26,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
         if(!req.model) {
             req.model = ModelFactory(collectionName);
         }
-        return next()
+        return next();
     });
 
     // List operation
