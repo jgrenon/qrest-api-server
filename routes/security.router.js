@@ -49,7 +49,7 @@ module.exports = function(db, config, Models, ModelFactory, log, app) {
         });
     });
 
-    router.get('/me', passport.authenticate(config.auth.type, { session: false }), function (req, res, next) {
+    router.get('/me', passport.authenticate(config.auth.type, { session: false }), function (req, res ) {
         var pre = _.get(Models.users.hooks, 'show.pre');
         var post = _.get(Models.users.hooks, 'show.post');
 
@@ -58,11 +58,10 @@ module.exports = function(db, config, Models, ModelFactory, log, app) {
             q = pre(q, req);
         }
 
-        Models.users.model.show(req.user._id, { wrap: true }).then(function(user) {
+        Models.users.model.show(q, { wrap: true }).then(function(user) {
             if(post) {
                 user = post(user);
             }
-
             res.json(user.unwrap());
         });
     });
@@ -77,8 +76,9 @@ module.exports = function(db, config, Models, ModelFactory, log, app) {
             }
 
             return generateToken({username: user.username, userId: user._id.toString()}).then(function(token) {
-                res.send(token);
+                res.json({username: user.username, token: token});
             }).catch(function(err) {
+                console.log(err);
                 res.status(500).send('security-error');
             });
 

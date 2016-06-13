@@ -77,11 +77,12 @@ DB.getDB(config.db.default_db).then(function(db) {
                 }
 
                 // Validate password
-                var credential = hooks.users.pre({password: password}).password;
+                var credential = Models.users.hooks.create.pre({password: password}).password;
 
                 if(user.password !== credential) {
                     return done(null, false, { message: 'Incorrect password.' });
                 }
+
                 return done(null, user);
             });
         }
@@ -89,7 +90,7 @@ DB.getDB(config.db.default_db).then(function(db) {
 
     passport.use(new BearerStrategy(
         function(token, done) {
-            JWT.verify(token, config.SHARED_KEY, {audience:config.JWT_AUDIENCE, issuer: config.JWT_ISSUER}, function(err, tokenInfo) {
+            JWT.verify(token, config.JWT_SHARED_KEY, {audience:config.JWT_AUDIENCE, issuer: config.JWT_ISSUER}, function(err, tokenInfo) {
                 if(err) {
                     log.error(err);
                     return done(err);

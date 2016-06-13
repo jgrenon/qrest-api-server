@@ -56,12 +56,9 @@ module.exports = P.method(function() {
             agent: supertest.agent(url),
             resetCollections: function(collections) {
                 return P.map(collections, function(collName) {
-                    console.log("Loading fixture for collection", collName);
                     var coll = db.collection(collName);
                     return _loadFixture(collName).then(function(documents) {
-                        console.log("inserting %d document(s) in collection %s", documents.length, collName);
                         return coll.removeMany({}).then(function() {
-                            console.log("All documents from collection %s were removed", collName);
                             return P.map(documents, function(doc) {
                                 return coll.insertOne(doc);
                             }).then(function(rows) {
@@ -74,9 +71,7 @@ module.exports = P.method(function() {
             },
             clean: function(collections) {
                 return P.map(collections, function(coll) {
-                    console.log("Cleaning up collection %s", coll);
                     return db.collection(coll).removeMany({}).then(function(results) {
-                        console.log("%d document(s) were cleaned from collection %s", results.result.n, coll);
                         return results;
                     });
                 });

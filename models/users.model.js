@@ -54,18 +54,7 @@ module.exports = function(ModelFactory, config, log) {
                 }
             },
             update:{},
-            remove:{},
-            show:{
-                post: function(user) {
-                    user.password = null;
-                    return user;
-                }
-            },
-            list:{
-                post: function(users) {
-                    return _.map(users, function(user){ user.password = null; return user });
-                }
-            }
+            remove:{}
         }
     }
 
