@@ -60,6 +60,11 @@ DB.getDB(config.db.default_db).then(function(db) {
         return model;
     }});
 
+    // Register any additional hooks
+    requireDirectory(module, __dirname + "/hooks", { include: /\.hook\.js$/, visit: function(factory) {
+        return factory(Models, config, log);
+    }});
+
     passport.use(new LocalStrategy(
         function(username, password, done) {
             db.collection('users').findOne({username: username }, function(err, user) {

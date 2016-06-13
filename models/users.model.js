@@ -31,8 +31,8 @@ module.exports = function(ModelFactory, config, log) {
 
     const schema = Schema.object().keys({
         _id: Schema.string().alphanum().default(() => {return Random.id() }, 'auto-generated unique id'),
-        username: Schema.string().meta({index: 1}).required(),
-        email: Schema.string().lowercase().email().meta({index: 1}).required(),
+        username: Schema.string().meta({index: 1, unique: true}).required(),
+        email: Schema.string().lowercase().email().meta({index: 1, unique: true}).required(),
         email_verified: Schema.boolean().default(false).meta({public: false }),
         password: Schema.string().meta({public: false }),
         status: Schema.string().default(Status.PENDING),

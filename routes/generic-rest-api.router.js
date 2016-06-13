@@ -47,7 +47,7 @@ module.exports = function(db, config, Models, ModelFactory, log) {
         }
 
         var query = _.pickBy(req.query || {}, function (val, key) {
-            return key !== 'limit' && key.indexOf('s_') !== 0;
+            return key !== 'apikey' && key !== 'limit' && key.indexOf('s_') !== 0;
         });
 
         const OPERATORS = ['<', '>', '!'];
@@ -117,10 +117,12 @@ module.exports = function(db, config, Models, ModelFactory, log) {
             query = pre(query, req, next);
         }
 
-        return req.model.list(query, { sort: sort, limit: parseInt(req.query.limit || "10"), offset: parseInt(req.query.limit || "0")}).then(function(results){
+        return req.model.list(query, { sort: sort, limit: parseInt(req.query.limit || "10"), offset: parseInt(req.query.limit || "0")}).then((results) => {
             if(post) {
                 results = post(results, next);
             }
+
+            console.log("Found %d %s", results.length, req.model.key);
 
             return res.send(results);
         });

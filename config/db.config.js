@@ -9,7 +9,7 @@ module.exports = {
                 url: process.env.MONGODB_URL || 'mongodb://mongodb:27017/qrest_api'
             },
             $default: {
-                url: process.env.MONGODB_URL || 'mongodb://localhost:27017/qrest_api'
+                url: process.env.MONGODB_URL || 'mongodb://localhost:27017/qrestapi_dev'
             }
         },
         default_db: 'qrest_api'

@@ -18,7 +18,7 @@ var expressRouter = require('express-promise-router'),
     generateToken = require('../lib/generate-token'),
     passport= require('passport');
 
-module.exports = function(db, config, Models) {
+module.exports = function(db, config, Models, ModelFactory, log, app) {
 
     var router = expressRouter();
 
@@ -27,36 +27,43 @@ module.exports = function(db, config, Models) {
     });
 
     router.post('/register', function(req, res, next) {
-        var pre = _.get(hooks.users, "create.pre");
-        var post = _.get(hooks.users, "create.post");
+        var pre = _.get(Models.users.hooks, "create.pre");
+        var post = _.get(Models.users.hooks, "create.post");
 
         if(pre) {
             req.body = pre(req.body, req);
         }
 
-        Models.users.insert(req.body).then(function(user) {
+        return Models.users.model.insert(req.body, { wrap: true }).then(function(user) {
             if(post) {
                 user = post(req.body, user);
             }
-            res.send(user);
-        }).catch(next);
+            res.json(user.unwrap());
+        }).catch(function(err) {
+            if(err.isJoi) {
+                res.send(400, err.details);
+            }
+            else {
+                next(err);
+            }
+        });
     });
 
     router.get('/me', passport.authenticate(config.auth.type, { session: false }), function (req, res, next) {
-        var pre = _.get(hooks.users, 'show.pre');
-        var post = _.get(hooks.users, 'show.post');
+        var pre = _.get(Models.users.hooks, 'show.pre');
+        var post = _.get(Models.users.hooks, 'show.post');
 
-        var q = {username: req.user.username };
+        var q = req.user._id;
         if(pre) {
             q = pre(q, req);
         }
 
-        Models.users.show(req.user._id).then(function(user) {
+        Models.users.model.show(req.user._id, { wrap: true }).then(function(user) {
             if(post) {
                 user = post(user);
             }
 
-            res.send(user);
+            res.json(user.unwrap());
         });
     });
     
